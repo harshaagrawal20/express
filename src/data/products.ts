@@ -76,22 +76,22 @@ export const sampleProducts: Product[] = [
   // Apparel
   {
     id: 'apparel-001',
-    name: 'Levi\'s 501 Original Jeans',
-    category: 'Apparel',
-    subcategory: 'Jeans',
-    image: '/images/levis-501.jpg',
-    description: 'Classic straight-fit jeans with authentic vintage wash',
-    features: ['100% Cotton', 'Straight Fit', 'Button Fly', 'Machine Washable'],
+    name: 'Men\'s Slim Fit Shirt',
+    category: 'Cloths',
+    subcategory: 'Shirts',
+    image: '/images/mens-slim-fit-shirt.jpg',
+    description: 'Slim fit shirt for men with a modern look',
+    features: ['Slim Fit', 'Cotton', 'Full Sleeve', 'Button Down'],
     variants: [
-      { price: 4999, brand: 'Levi\'s', seller: 'Walmart', rating: 4.3, stock: 50 },
-      { price: 4499, brand: 'Levi\'s', seller: 'FashionHub', rating: 4.2, stock: 30, discount: 10 }
+      { price: 1299, brand: 'Arrow', seller: 'Walmart', rating: 4.2, stock: 50 },
+      { price: 1199, brand: 'Arrow', seller: 'FashionMart', rating: 4.0, stock: 30, discount: 8 }
     ],
-    tags: ['denim', 'classic', 'casual']
+    tags: ['shirt', 'men', 'slim-fit']
   },
   {
     id: 'apparel-002',
     name: 'Nike Air Force 1 Low',
-    category: 'Apparel',
+    category: 'Cloths',
     subcategory: 'Shoes',
     image: '/images/nike-af1.jpg',
     description: 'Iconic basketball shoe with classic white leather design',
@@ -105,7 +105,7 @@ export const sampleProducts: Product[] = [
   {
     id: 'apparel-003',
     name: 'Uniqlo Heattech Crew Neck T-Shirt',
-    category: 'Apparel',
+    category: 'Cloths',
     subcategory: 'T-Shirts',
     image: '/images/uniqlo-heattech.jpg',
     description: 'Thermal t-shirt with moisture-wicking technology',
@@ -241,7 +241,7 @@ export const sampleProducts: Product[] = [
   {
     id: 'apparel-budget-001',
     name: 'Basic Cotton T-Shirt',
-    category: 'Apparel',
+    category: 'Cloths',
     subcategory: 'T-Shirts',
     image: '/images/basic-tshirt.jpg',
     description: 'Comfortable cotton t-shirt in multiple colors',
@@ -270,7 +270,7 @@ export const sampleProducts: Product[] = [
 
 export const categories = [
   'Electronics',
-  'Apparel', 
+  'Cloths', 
   'Grocery',
   'Beauty',
   'Home',

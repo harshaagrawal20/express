@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,6 +8,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { sampleProducts, categories, getProductsByCategory } from '@/data/products';
 import { Product } from '@/types/product';
 import { Search, Filter, X } from 'lucide-react';
+import clothsData from '../../cloths_data.json';
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -17,12 +18,15 @@ export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
   const [sortBy, setSortBy] = useState('name');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const navigate = useNavigate();
 
   useEffect(() => {
-    let filtered = [...products];
+    let filtered: any[] = [...products];
 
-    // Filter by category
-    if (selectedCategory !== 'all') {
+    // Use clothsData if category is 'Cloths'
+    if (selectedCategory === 'Cloths') {
+      filtered = clothsData;
+    } else if (selectedCategory !== 'all') {
       filtered = getProductsByCategory(selectedCategory);
     }
 
@@ -30,16 +34,18 @@ export default function Products() {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query) ||
-        product.tags?.some(tag => tag.toLowerCase().includes(query))
+        (product.name?.toLowerCase?.().includes(query) ||
+         product.title?.toLowerCase?.().includes(query) ||
+         product.description?.toLowerCase?.().includes(query) ||
+         product.tags?.some?.(tag => tag.toLowerCase().includes(query))
+        )
       );
     }
 
     // Filter by price range
     if (priceRange.min || priceRange.max) {
       filtered = filtered.filter(product => {
-        const minPrice = Math.min(...product.variants.map(v => v.price));
+        const minPrice = product.price ?? Math.min(...(product.variants?.map?.(v => v.price) || [0]));
         const min = parseFloat(priceRange.min) || 0;
         const max = parseFloat(priceRange.max) || Infinity;
         return minPrice >= min && minPrice <= max;
@@ -47,21 +53,23 @@ export default function Products() {
     }
 
     // Sort products
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'price-low':
-          return Math.min(...a.variants.map(v => v.price)) - Math.min(...b.variants.map(v => v.price));
-        case 'price-high':
-          return Math.min(...b.variants.map(v => v.price)) - Math.min(...a.variants.map(v => v.price));
-        case 'rating':
-          const aRating = Math.max(...a.variants.map(v => v.rating));
-          const bRating = Math.max(...b.variants.map(v => v.rating));
-          return bRating - aRating;
-        case 'name':
-        default:
-          return a.name.localeCompare(b.name);
-      }
-    });
+    if (selectedCategory !== 'Cloths') {
+      filtered.sort((a, b) => {
+        switch (sortBy) {
+          case 'price-low':
+            return (a.price ?? Math.min(...(a.variants?.map?.(v => v.price) || [0]))) - (b.price ?? Math.min(...(b.variants?.map?.(v => v.price) || [0])));
+          case 'price-high':
+            return (b.price ?? Math.min(...(b.variants?.map?.(v => v.price) || [0]))) - (a.price ?? Math.min(...(a.variants?.map?.(v => v.price) || [0])));
+          case 'rating':
+            const aRating = a.rating ?? Math.max(...(a.variants?.map?.(v => v.rating) || [0]));
+            const bRating = b.rating ?? Math.max(...(b.variants?.map?.(v => v.rating) || [0]));
+            return bRating - aRating;
+          case 'name':
+          default:
+            return (a.name || a.title).localeCompare(b.name || b.title);
+        }
+      });
+    }
 
     setFilteredProducts(filtered);
   }, [products, selectedCategory, searchQuery, sortBy, priceRange]);
@@ -228,7 +236,34 @@ export default function Products() {
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
+                selectedCategory === 'Cloths' && 'product_id' in product ? (
+                  (() => {
+                    const cloth = product as typeof clothsData[number];
+                    return (
+                      <div
+                        key={cloth.product_id}
+                        className="bg-white rounded-lg shadow p-4 flex flex-col items-center cursor-pointer hover:shadow-lg transition"
+                        onClick={() => navigate(`/product-detail/cloths/${cloth.product_id}`)}
+                      >
+                        <img src={cloth.image_url} alt={cloth.title} className="w-32 h-32 object-cover rounded mb-3" />
+                        <h4 className="font-semibold text-lg mb-1">{cloth.title}</h4>
+                        <p className="text-sm text-muted-foreground mb-2">{cloth.description}</p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-walmart-blue font-bold">${cloth.price}</span>
+                          <span className="text-xs text-gray-500">{cloth.size}</span>
+                          <span className="text-xs text-gray-500">{cloth.color}</span>
+                        </div>
+                        <div className="flex items-center gap-1 mb-2">
+                          <span className="text-yellow-500">★</span>
+                          <span className="text-sm">{cloth.rating} ({cloth.reviews_count} reviews)</span>
+                        </div>
+                        <span className={`text-xs font-semibold ${cloth.in_stock ? 'text-green-600' : 'text-red-500'}`}>{cloth.in_stock ? 'In Stock' : 'Out of Stock'}</span>
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <ProductCard key={product.id} product={product} />
+                )
               ))}
             </div>
           ) : (

@@ -49,7 +49,7 @@ export interface EmotionAnalysis {
 
 export type Category = 
   | 'Electronics'
-  | 'Apparel'
+  | 'Cloths'
   | 'Grocery'
   | 'Beauty'
   | 'Home'

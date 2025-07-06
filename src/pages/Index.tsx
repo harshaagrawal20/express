@@ -8,6 +8,7 @@ import { FaceTracker } from '@/components/FaceTracker';
 import { sampleProducts, categories } from '@/data/products';
 import { useFaceNavigation } from '@/hooks/useFaceNavigation';
 import { Camera, CameraOff, ShoppingBag, Truck, Shield, RefreshCw } from 'lucide-react';
+import clothsData from '../../cloths_data.json';
 
 export default function Index() {
   const navigate = useNavigate();
@@ -186,7 +187,7 @@ export default function Index() {
                     <div className="bg-walmart-light-blue rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3 group-hover:bg-walmart-blue group-hover:text-white transition-colors">
                       <span className="text-2xl">
                         {category === 'Electronics' ? '📱' :
-                         category === 'Apparel' ? '👕' :
+                         category === 'Cloths' ? '👕' :
                          category === 'Grocery' ? '🛒' :
                          category === 'Beauty' ? '💄' :
                          category === 'Home' ? '🏠' :

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,9 +11,10 @@ import { Product, ProductVariant } from '@/types/product';
 import { useCart } from '@/contexts/CartContext';
 import { ShoppingCart, Star, Truck, Shield, RefreshCw, Heart, Camera, CameraOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import clothsData from '../../cloths_data.json';
 
 export default function ProductDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { id, product_id } = useParams<{ id?: string; product_id?: string }>();
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
@@ -23,8 +24,16 @@ export default function ProductDetail() {
   const [emotionRecommendations, setEmotionRecommendations] = useState<Product[]>([]);
   const [showEmotionAlert, setShowEmotionAlert] = useState(false);
   const [isFaceTrackingEnabled, setIsFaceTrackingEnabled] = useState(false);
+  const [clothProduct, setClothProduct] = useState<typeof clothsData[number] | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    if (product_id) {
+      // Cloths detail page
+      const foundCloth = clothsData.find((item) => String(item.product_id) === String(product_id));
+      setClothProduct(foundCloth || null);
+      return;
+    }
     if (id) {
       const foundProduct = sampleProducts.find(p => p.id === id);
       setProduct(foundProduct || null);
@@ -46,7 +55,7 @@ export default function ProductDetail() {
         }
       }
     }
-  }, [id, selectedVariantIndex]);
+  }, [id, product_id, selectedVariantIndex]);
 
   const handleAddToCart = () => {
     if (product) {
@@ -67,11 +76,78 @@ export default function ProductDetail() {
     }).format(price);
   };
 
-  if (!product) {
+  if (product_id) {
+    if (!clothProduct) {
+      return (
+        <div className="container mx-auto px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold mb-4">Product not found</h1>
+          <p className="text-muted-foreground">The product you're looking for doesn't exist.</p>
+        </div>
+      );
+    }
+    // Cloths detail rendering
+    // Convert clothProduct to Product type for cart
+    const productForCart = {
+      id: `cloths-${clothProduct.product_id}`,
+      name: clothProduct.title,
+      category: 'Cloths',
+      image: clothProduct.image_url,
+      description: clothProduct.description,
+      variants: [{
+        price: clothProduct.price,
+        brand: clothProduct.brand,
+        seller: 'Walmart',
+        rating: clothProduct.rating,
+        stock: clothProduct.in_stock ? 1 : 0,
+      }],
+    };
+    const handleAddToCartCloth = () => {
+      addToCart(productForCart, 0, 1);
+      toast({
+        title: 'Added to cart!',
+        description: `${clothProduct.title} has been added to your cart.`,
+      });
+    };
+    const handleBuyNowCloth = () => {
+      addToCart(productForCart, 0, 1);
+      navigate('/cart');
+    };
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold mb-4">Product not found</h1>
-        <p className="text-muted-foreground">The product you're looking for doesn't exist.</p>
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-2 gap-8 mb-12">
+          {/* Product Images */}
+          <div className="space-y-4">
+            <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+              <img
+                src={clothProduct.image_url}
+                alt={clothProduct.title}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          </div>
+          {/* Product Info */}
+          <div className="space-y-6">
+            <div>
+              <Badge className="mb-2 bg-walmart-light-blue text-walmart-blue">Cloths</Badge>
+              <h1 className="text-3xl font-bold mb-4">{clothProduct.title}</h1>
+              <p className="text-muted-foreground text-lg">{clothProduct.description}</p>
+            </div>
+            <div className="flex gap-4 items-center">
+              <span className="text-walmart-blue font-bold text-2xl">${clothProduct.price}</span>
+              <span className="text-xs text-gray-500">{clothProduct.size}</span>
+              <span className="text-xs text-gray-500">{clothProduct.color}</span>
+            </div>
+            <div className="flex items-center gap-1 mb-2">
+              <span className="text-yellow-500">★</span>
+              <span className="text-sm">{clothProduct.rating} ({clothProduct.reviews_count} reviews)</span>
+            </div>
+            <span className={`text-xs font-semibold ${clothProduct.in_stock ? 'text-green-600' : 'text-red-500'}`}>{clothProduct.in_stock ? 'In Stock' : 'Out of Stock'}</span>
+            <div className="flex gap-4 mt-6">
+              <Button onClick={handleAddToCartCloth} disabled={!clothProduct.in_stock} className="bg-walmart-blue text-white">Add to Cart</Button>
+              <Button onClick={handleBuyNowCloth} disabled={!clothProduct.in_stock} className="bg-walmart-yellow text-walmart-blue font-bold">Buy Now</Button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
