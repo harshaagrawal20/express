@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import * as faceapi from 'face-api.js';
 // Set to true to use Python API for emotion detection
-const USE_PYTHON_API = false; // Change to true to enable backend emotion detection
+const USE_PYTHON_API = true; // Change to true to enable backend emotion detection
 import { Product } from '@/types/product';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -517,6 +517,38 @@ export function FaceTracker({ currentProduct, onNavigate, onEmotionRecommendatio
           </CardContent>
         </Card>
       )}
+      {/* Emotion Fetcher Component (for testing API) */}
+      <EmotionFetcher onEmotion={(data) => console.log('Emotion data:', data)} />
+    </div>
+  );
+}
+
+// Emotion Fetcher Component (for testing API)
+function EmotionFetcher({ onEmotion }) {
+  const [emotion, setEmotion] = useState(null);
+  const [category, setCategory] = useState(null);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("http://localhost:5000/emotion");
+        const data = await res.json();
+        setEmotion(data.emotion);
+        setCategory(data.category);
+        if (onEmotion) onEmotion(data);
+      } catch (err) {
+        setEmotion("error");
+        setCategory("error");
+      }
+    }, 1000); // Poll every second
+
+    return () => clearInterval(interval);
+  }, [onEmotion]);
+
+  return (
+    <div>
+      <span>Detected Emotion: {emotion}</span>
+      <span>Category: {category}</span>
     </div>
   );
 }
